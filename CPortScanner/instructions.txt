@@ -1,0 +1,7 @@
+json-c 라이브러리 설치 (MacOS Apple Silicon)
+
+brew install json-c # 설치
+brew list json-c # 확인
+brew install pkg-config # 컴파일러에 경로 자동 설정
+gcc -o port_scanner port_scanner.c $(pkg-config --cflags --libs json-c) # 컴파일
+./port_scanner # 실행
