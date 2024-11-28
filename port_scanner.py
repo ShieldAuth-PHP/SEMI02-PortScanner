@@ -5,7 +5,7 @@ import socket
 import requests
 
 # Shodan API 키
-SHODAN_API_KEY = "i1boWdvdAeKg4gATIMpnemVz7Z9Mo0YW"
+SHODAN_API_KEY = "Shodan API Key"
 
 def scan_port(host, port):
     try:
