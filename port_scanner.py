@@ -1,6 +1,7 @@
 import json
 import os
 import socket
+from datetime import datetime
 
 import requests
 
@@ -16,13 +17,19 @@ def scan_port(host, port):
     except Exception:
         return False
 
+shodan_cache = {}
+
 def get_shodan_info(ip, port):
     clean_ip = ip.replace("http://", "").replace("/", "")
+    if clean_ip in shodan_cache:
+        return shodan_cache[clean_ip]
+
     url = f"https://api.shodan.io/shodan/host/{clean_ip}?key={SHODAN_API_KEY}"
     try:
         response = requests.get(url, timeout=5)
         if response.status_code == 200:
             data = response.json()
+            shodan_cache[clean_ip] = data
             for item in data.get("data", []):
                 if item.get("port") == port:
                     return {
@@ -35,7 +42,8 @@ def get_shodan_info(ip, port):
     return {"service": "Unknown", "version": "Unknown", "cve": ["No CVE available"]}
 
 def save_results_to_file(results):
-    filename = "test_scan_results.json"
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"scan_results_{timestamp}.json"
     try:
         with open(filename, "w") as f:
             json.dump(results, f, indent=4, separators=(",", ": "), ensure_ascii=False)
