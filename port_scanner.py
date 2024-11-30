@@ -3,6 +3,7 @@ import os
 import socket
 from datetime import datetime
 
+import boto3
 import requests
 
 # Shodan API 키
@@ -51,8 +52,26 @@ def save_results_to_file(results):
     except Exception as e:
         print(f"Error saving results to file: {e}")
 
+# AWS Lambda 클라이언트 생성
+lambda_client = boto3.client("lambda", region_name="us-east-1")  # 적절한 리전으로 변경
+
+def invoke_lambda(results):
+    lambda_function_name = "your_lambda_function_name"  # 생성한 Lambda 함수 이름
+    try:
+        response = lambda_client.invoke(
+            FunctionName=lambda_function_name,
+            InvocationType="RequestResponse",  # 동기 실행
+            Payload=json.dumps({"data": results}),
+        )
+        response_payload = json.loads(response["Payload"].read())
+        print(f"Lambda response: {response_payload}")
+    except Exception as e:
+        print(f"Error invoking Lambda: {e}")
+
 def main():
     host = input("Enter IP address to scan: ").strip()
+    if not validate_ip(host):
+        return
     start_port = int(input("Enter start port: "))
     end_port = int(input("Enter end port: "))
 
@@ -72,6 +91,8 @@ def main():
             })
 
     save_results_to_file(results)
+    invoke_lambda(results)  # Lambda 호출
+
 
 if __name__ == "__main__":
     main()
